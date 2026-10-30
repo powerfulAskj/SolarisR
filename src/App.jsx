@@ -31,7 +31,6 @@ function getNoiseURL() {
   return noiseURL;
 }
 
-// Жестко фиксируем слои по центру экрана
 const fixLayer = (node, z) => {
   Object.assign(node.style, {
     position: "fixed",
@@ -49,9 +48,6 @@ const fixLayer = (node, z) => {
   return node;
 };
 
-/* ============================================================
- * ЭФФЕКТ 1: BLUR + SHAKE + SQUARES (Без текста)
- * ============================================================ */
 const BLUR_DURATION = 79245;
 
 function Effect1Blur({ onComplete }) {
@@ -73,14 +69,11 @@ function Effect1Blur({ onComplete }) {
       return t;
     };
 
-    // Основной слой размытия
     const blurElement = fixLayer(el("div", "blur-effect"), 10);
     Object.assign(blurElement.style, { width: "200vw", height: "200vh" });
 
-    // Слой с квадратами
     const squaresContainer = fixLayer(el("div", ""), 15);
 
-    // Сканлайны и шум
     const scan = fixLayer(el("div", ""), 30);
     scan.style.background =
       "repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0,rgba(0,0,0,.28) 1px,transparent 1px,transparent 3px)";
@@ -89,7 +82,6 @@ function Effect1Blur({ onComplete }) {
     Object.assign(grain.style, { opacity: ".12", mixBlendMode: "overlay" });
     grain.style.backgroundImage = `url(${getNoiseURL()})`;
 
-    // Инверсия (вспышки)
     const invert = fixLayer(el("div", ""), 35);
     Object.assign(invert.style, {
       background: "#fff",
@@ -97,7 +89,6 @@ function Effect1Blur({ onComplete }) {
       opacity: "0",
     });
 
-    // Мерцание
     const flicker = fixLayer(el("div", ""), 36);
     Object.assign(flicker.style, {
       background: "#fff",
@@ -230,9 +221,6 @@ function Effect1Blur({ onComplete }) {
   return null;
 }
 
-/* ============================================================
- * ЭФФЕКТ 2: FLASH + ТЕКСТ (По твоему оригинальному коду)
- * ============================================================ */
 const audioFiles = [
   "/audio/2.mp3",
   "/audio/2a.mp3",
@@ -397,7 +385,6 @@ function Effect2Flash({ onComplete }) {
 
       document.body.appendChild(flash);
 
-      // Тексты
       const addText = () => {
         const txt = el("div", "flash-text");
         txt.textContent = pick(randomPhrases);
@@ -452,9 +439,6 @@ function Effect2Flash({ onComplete }) {
   return null;
 }
 
-/* ============================================================
- * ЭФФЕКТ 3: ФИГУРЫ + ВСПЫШКИ
- * ============================================================ */
 function Effect3Shapes({ onComplete, audio3Ref }) {
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
@@ -641,9 +625,7 @@ function Effect3Shapes({ onComplete, audio3Ref }) {
   return null;
 }
 
-/* ============================================================
- * ЭФФЕКТ 4: ВИХРЬ + ВОЛНЫ + ТРЕЩИНЫ
- * ============================================================ */
+
 function makeCrack(x, y) {
   const segs = [];
   const rays = rand(6, 10) | 0;
@@ -932,9 +914,6 @@ function Effect4Vortex({ onComplete }) {
   return null;
 }
 
-/* ============================================================
- * ЭФФЕКТ 5: THREE.JS (1000 сфер)
- * ============================================================ */
 function Effect5Three({ onComplete }) {
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
@@ -1104,9 +1083,7 @@ function Effect5Three({ onComplete }) {
   return null;
 }
 
-/* ============================================================
- * ГЛАВНЫЙ КОМПОНЕНТ (Цепочка, аудио и предупреждение)
- * ============================================================ */
+
 export default function App() {
   const [stage, setStage] = useState("idle");
   const [accepted, setAccepted] = useState(false);
@@ -1115,7 +1092,7 @@ export default function App() {
   const audio2Ref = useRef(null);
   const audio3Ref = useRef(null);
 
-  // Обработка Esc
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && stage !== "idle" && stage !== "done") {
@@ -1144,7 +1121,6 @@ export default function App() {
       });
   }, []);
 
-  // Глобальный клик по экрану (как в оригинале)
   useEffect(() => {
     const onClick = (e) => {
       if (e.target.closest && e.target.closest(".fx-warning")) return;
