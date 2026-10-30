@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
+const BASE = import.meta.env.BASE_URL;
+
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -221,15 +223,16 @@ function Effect1Blur({ onComplete }) {
   return null;
 }
 
+
 const audioFiles = [
-  "/audio/2.mp3",
-  "/audio/2a.mp3",
-  "/audio/2b.mp3",
-  "/audio/2c.mp3",
-  "/audio/2d.mp3",
-  "/audio/2e.mp3",
-  "/audio/2f.mp3",
-  "/audio/2g.mp3",
+  `${BASE}audio/2.mp3`,
+  `${BASE}audio/2a.mp3`,
+  `${BASE}audio/2b.mp3`,
+  `${BASE}audio/2c.mp3`,
+  `${BASE}audio/2d.mp3`,
+  `${BASE}audio/2e.mp3`,
+  `${BASE}audio/2f.mp3`,
+  `${BASE}audio/2g.mp3`,
 ];
 
 const randomPhrases = [
@@ -625,7 +628,6 @@ function Effect3Shapes({ onComplete, audio3Ref }) {
   return null;
 }
 
-
 function makeCrack(x, y) {
   const segs = [];
   const rays = rand(6, 10) | 0;
@@ -719,7 +721,7 @@ function Effect4Vortex({ onComplete }) {
       }
     }, 180);
 
-    const audio = new Audio("/audio/4.mp3");
+    const audio = new Audio(`${BASE}/audio/4.mp3`);
     audio.volume = 1;
     const t0 = performance.now();
     const progress = () => {
@@ -1043,7 +1045,7 @@ function Effect5Three({ onComplete }) {
     };
     rafId = requestAnimationFrame(loop);
 
-    const audio = new Audio("/audio/5.mp3");
+    const audio = new Audio(`${BASE}/audio/5.mp3`);
     audio.volume = 1;
     const finish = () => {
       if (stopped) return;
@@ -1083,7 +1085,6 @@ function Effect5Three({ onComplete }) {
   return null;
 }
 
-
 export default function App() {
   const [stage, setStage] = useState("idle");
   const [accepted, setAccepted] = useState(false);
@@ -1091,7 +1092,6 @@ export default function App() {
   const audio1Ref = useRef(null);
   const audio2Ref = useRef(null);
   const audio3Ref = useRef(null);
-
 
   useEffect(() => {
     const onKey = (e) => {
@@ -1161,21 +1161,21 @@ export default function App() {
       <audio
         ref={audio1Ref}
         id="audio1"
-        src="/audio/1.mp3"
+        src={`${BASE}/audio/1.mp3`}
         preload="auto"
         style={{ display: "none" }}
       />
       <audio
         ref={audio2Ref}
         id="audio2"
-        src="/audio/2.mp3"
+        src={`${BASE}/audio/2.mp3`}
         preload="auto"
         style={{ display: "none" }}
       />
       <audio
         ref={audio3Ref}
         id="audio3"
-        src="/audio/3.mp3"
+        src={`${BASE}/audio/3.mp3`}
         preload="none"
         style={{ display: "none" }}
       />
