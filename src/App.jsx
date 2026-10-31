@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
-// const BASE = import.meta.env.BASE_URL;
 const BASE = '/';
 
 const rand = (a, b) => a + Math.random() * (b - a);
