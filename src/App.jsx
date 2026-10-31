@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
-const BASE = import.meta.env.BASE_URL;
+// const BASE = import.meta.env.BASE_URL;
+const BASE = '/';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -721,7 +722,7 @@ function Effect4Vortex({ onComplete }) {
       }
     }, 180);
 
-    const audio = new Audio(`${BASE}/audio/4.mp3`);
+    const audio = new Audio(`${BASE}audio/4.mp3`);
     audio.volume = 1;
     const t0 = performance.now();
     const progress = () => {
@@ -1045,7 +1046,7 @@ function Effect5Three({ onComplete }) {
     };
     rafId = requestAnimationFrame(loop);
 
-    const audio = new Audio(`${BASE}/audio/5.mp3`);
+    const audio = new Audio(`${BASE}audio/5.mp3`);
     audio.volume = 1;
     const finish = () => {
       if (stopped) return;
@@ -1161,21 +1162,21 @@ export default function App() {
       <audio
         ref={audio1Ref}
         id="audio1"
-        src={`${BASE}/audio/1.mp3`}
+        src={`${BASE}audio/1.mp3`}
         preload="auto"
         style={{ display: "none" }}
       />
       <audio
         ref={audio2Ref}
         id="audio2"
-        src={`${BASE}/audio/2.mp3`}
+        src={`${BASE}audio/2.mp3`}
         preload="auto"
         style={{ display: "none" }}
       />
       <audio
         ref={audio3Ref}
         id="audio3"
-        src={`${BASE}/audio/3.mp3`}
+        src={`${BASE}audio/3.mp3`}
         preload="none"
         style={{ display: "none" }}
       />
