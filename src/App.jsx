@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 
 const BASE = '/';
@@ -71,6 +71,111 @@ function Effect1Blur({ onComplete }) {
       return t;
     };
 
+    // фон из 5-го эффекта — лежит под слоями первого эффекта
+    const bgRoot = fixLayer(el("div"), 1);
+    bgRoot.style.background = "#050814";
+
+    const bgImage = `url("${BASE}image/background.jpg")`;
+    const bgBase = el("div");
+    Object.assign(bgBase.style, {
+      position: "absolute",
+      inset: "-2%",
+      backgroundImage: bgImage,
+      backgroundPosition: "center",
+      backgroundSize: "cover",
+      filter: "saturate(2.2) contrast(1.35) brightness(1.08)",
+      transform: "scale(1.04)",
+    });
+    bgRoot.appendChild(bgBase);
+
+    const bgTint = el("div");
+    Object.assign(bgTint.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "linear-gradient(180deg,rgba(0,210,255,.3),rgba(18,0,110,.2) 48%,rgba(0,245,120,.36))",
+      mixBlendMode: "color",
+    });
+    bgRoot.appendChild(bgTint);
+
+    const bgBands = Array.from({ length: 16 }, () => {
+      const band = el("div");
+      Object.assign(band.style, {
+        position: "absolute",
+        inset: "0 -8%",
+        zIndex: "3",
+        backgroundImage: bgImage,
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+        pointerEvents: "none",
+        willChange: "clip-path, transform, filter, opacity",
+      });
+      bgRoot.appendChild(band);
+      return band;
+    });
+
+    const bgNoise = el("div");
+    Object.assign(bgNoise.style, {
+      position: "absolute",
+      inset: 0,
+      backgroundImage: `url("${getNoiseURL()}")`,
+      backgroundSize: "128px 128px",
+      mixBlendMode: "screen",
+      opacity: ".18",
+      pointerEvents: "none",
+    });
+    bgRoot.appendChild(bgNoise);
+
+    const bgScan = el("div");
+    Object.assign(bgScan.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "repeating-linear-gradient(0deg,rgba(0,0,0,.24) 0 1px,transparent 1px 3px)",
+      mixBlendMode: "multiply",
+      pointerEvents: "none",
+    });
+    bgRoot.appendChild(bgScan);
+
+    const bgFlare = el("div");
+    Object.assign(bgFlare.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "radial-gradient(ellipse at 48% 44%,rgba(255,255,255,.9),rgba(190,255,255,.3) 22%,transparent 54%)",
+      opacity: "0",
+      mixBlendMode: "screen",
+      transition: "opacity 45ms steps(2,end)",
+      pointerEvents: "none",
+    });
+    bgRoot.appendChild(bgFlare);
+
+    let bgHue = 0;
+    const updateBgBands = () => {
+      const active = 5 + Math.floor(Math.random() * 10);
+      bgBands.forEach((band, index) => {
+        if (index >= active) {
+          band.style.opacity = "0";
+          return;
+        }
+        const top = Math.random() * 96;
+        const height = 1.5 + Math.random() * 15;
+        const shift = (Math.random() - 0.5) * 18;
+        const hue = [165, 185, 205, 285, 330][Math.floor(Math.random() * 5)];
+        band.style.clipPath = `inset(${top}% 0 ${Math.max(0, 100 - top - height)}% 0)`;
+        band.style.transform = `translateX(${shift}vw) scaleY(${0.9 + Math.random() * 0.25})`;
+        band.style.filter = `hue-rotate(${hue}deg) saturate(3.5) contrast(1.7) brightness(${1.2 + Math.random() * 1.5})`;
+        band.style.opacity = String(0.18 + Math.random() * 0.42);
+        band.style.mixBlendMode = Math.random() > 0.5 ? "screen" : "normal";
+      });
+      bgFlare.style.opacity =
+        Math.random() > 0.9 ? String(0.18 + Math.random() * 0.45) : "0";
+      bgTint.style.filter = `hue-rotate(${Math.random() * 36 - 18}deg)`;
+      bgHue = (bgHue + 7) % 360;
+      bgBase.style.filter = `hue-rotate(${bgHue}deg) saturate(2.2) contrast(1.35) brightness(1.08)`;
+    };
+    updateBgBands();
+    const bgTimer = setInterval(updateBgBands, 90);
     const blurElement = fixLayer(el("div", "blur-effect"), 10);
     Object.assign(blurElement.style, { width: "200vw", height: "200vh" });
 
@@ -217,6 +322,8 @@ function Effect1Blur({ onComplete }) {
       grain.remove();
       invert.remove();
       flicker.remove();
+      clearInterval(bgTimer);
+      bgRoot.remove();
     };
   }, []);
 
@@ -837,9 +944,6 @@ function Effect4Vortex({ onComplete }) {
         c.lineWidth = 10 * (1 - q * 0.5);
         c.strokeStyle = `rgba(0, 255, 0, ${(0.9 * (1 - q * q)).toFixed(3)})`;
         c.beginPath();
-        c.arc(wv.x, wv.y, rad, 0);
-
-        c.beginPath();
         c.arc(wv.x, wv.y, rad, 0, Math.PI * 2);
         c.stroke();
         c.shadowColor = "rgba(160, 0, 255, 0.8)";
@@ -923,8 +1027,86 @@ function Effect5Three({ onComplete }) {
   }, [onComplete]);
 
   useEffect(() => {
-    const container = fixLayer(document.createElement("div"), 999);
+    const root = fixLayer(document.createElement("div"), 999);
+    root.style.background = "#050814";
 
+    // --- фон Codex: фото + тонировка + глитч-полосы + шум + скан-линии ---
+    const image = `url("${BASE}image/background.jpg")`;
+    const base = el("div");
+    Object.assign(base.style, {
+      position: "absolute",
+      inset: "-2%",
+      backgroundImage: image,
+      backgroundPosition: "center",
+      backgroundSize: "cover",
+      filter: "saturate(2.2) contrast(1.35) brightness(1.08)",
+      transform: "scale(1.04)",
+    });
+    root.appendChild(base);
+
+    const tint = el("div");
+    Object.assign(tint.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "linear-gradient(180deg,rgba(0,210,255,.3),rgba(18,0,110,.2) 48%,rgba(0,245,120,.36))",
+      mixBlendMode: "color",
+    });
+    root.appendChild(tint);
+
+    const bands = Array.from({ length: 16 }, () => {
+      const band = el("div");
+      Object.assign(band.style, {
+        position: "absolute",
+        inset: "0 -8%",
+        zIndex: "3",
+        backgroundImage: image,
+        backgroundPosition: "center",
+        backgroundSize: "cover",
+        pointerEvents: "none",
+        willChange: "clip-path, transform, filter, opacity",
+      });
+      root.appendChild(band);
+      return band;
+    });
+
+    const noise = el("div");
+    Object.assign(noise.style, {
+      position: "absolute",
+      inset: 0,
+      backgroundImage: `url("${getNoiseURL()}")`,
+      backgroundSize: "128px 128px",
+      mixBlendMode: "screen",
+      opacity: ".18",
+      pointerEvents: "none",
+    });
+    root.appendChild(noise);
+
+    const scanlines = el("div");
+    Object.assign(scanlines.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "repeating-linear-gradient(0deg,rgba(0,0,0,.24) 0 1px,transparent 1px 3px)",
+      mixBlendMode: "multiply",
+      pointerEvents: "none",
+    });
+    root.appendChild(scanlines);
+
+    const flare = el("div");
+    Object.assign(flare.style, {
+      position: "absolute",
+      inset: 0,
+      background:
+        "radial-gradient(ellipse at 48% 44%,rgba(255,255,255,.9),rgba(190,255,255,.3) 22%,transparent 54%)",
+      opacity: "0",
+      mixBlendMode: "screen",
+      transition: "opacity 45ms steps(2,end)",
+      pointerEvents: "none",
+    });
+    root.appendChild(flare);
+
+    // --- твой исходный 3D-шар ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -932,10 +1114,17 @@ function Effect5Three({ onComplete }) {
       0.1,
       1000,
     );
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
-    container.appendChild(renderer.domElement);
+    Object.assign(renderer.domElement.style, {
+      position: "absolute",
+      inset: "0",
+      zIndex: "2",
+      pointerEvents: "none",
+    });
+    root.appendChild(renderer.domElement);
 
     const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -1007,13 +1196,44 @@ function Effect5Three({ onComplete }) {
     let stopped = false,
       rafId = 0;
 
+    const audio = new Audio(`${BASE}audio/5.mp3`);
+    audio.volume = 1;
+
+    const updateBands = () => {
+      const active = 5 + Math.floor(Math.random() * 10);
+      bands.forEach((band, index) => {
+        if (index >= active) {
+          band.style.opacity = "0";
+          return;
+        }
+        const top = Math.random() * 96;
+        const height = 1.5 + Math.random() * 15;
+        const shift = (Math.random() - 0.5) * 18;
+        const hue = [165, 185, 205, 285, 330][Math.floor(Math.random() * 5)];
+        band.style.clipPath = `inset(${top}% 0 ${Math.max(0, 100 - top - height)}% 0)`;
+        band.style.transform = `translateX(${shift}vw) scaleY(${0.9 + Math.random() * 0.25})`;
+        band.style.filter = `hue-rotate(${hue}deg) saturate(3.5) contrast(1.7) brightness(${1.2 + Math.random() * 1.5})`;
+        band.style.opacity = String(0.18 + Math.random() * 0.42);
+        band.style.mixBlendMode = Math.random() > 0.5 ? "screen" : "normal";
+      });
+      flare.style.opacity =
+        Math.random() > 0.9 ? String(0.18 + Math.random() * 0.45) : "0";
+      tint.style.filter = `hue-rotate(${Math.random() * 36 - 18}deg)`;
+    };
+    updateBands();
+    const bandTimer = setInterval(updateBands, 90);
+
     const loop = () => {
       if (stopped) return;
       rafId = requestAnimationFrame(loop);
+
+      const seconds = audio.currentTime || 0;
+      base.style.filter = `hue-rotate(${(seconds * 32) % 360}deg) saturate(2.2) contrast(1.35) brightness(1.08)`;
+
       colorShift += 0.01;
       pulseTime += pulseSpeed;
       colorChangeTime += 0.05;
-      renderer.setClearColor(pick(bgColors), 0.7);
+      renderer.setClearColor(pick(bgColors), 0.35);
       group.position.x += directionX * 0.01;
       group.position.y += directionY * 0.01;
       if (group.position.x < -5 || group.position.x > 5) directionX *= -1;
@@ -1045,8 +1265,6 @@ function Effect5Three({ onComplete }) {
     };
     rafId = requestAnimationFrame(loop);
 
-    const audio = new Audio(`${BASE}audio/5.mp3`);
-    audio.volume = 1;
     const finish = () => {
       if (stopped) return;
       stopped = true;
@@ -1062,6 +1280,7 @@ function Effect5Three({ onComplete }) {
     return () => {
       stopped = true;
       cancelAnimationFrame(rafId);
+      clearInterval(bandTimer);
       window.removeEventListener("resize", onResize);
       audio.removeEventListener("ended", finish);
       audio.removeEventListener("error", finish);
@@ -1078,13 +1297,12 @@ function Effect5Three({ onComplete }) {
       backgroundSphere.material.dispose();
       renderer.dispose();
       if (renderer.forceContextLoss) renderer.forceContextLoss();
-      container.remove();
+      root.remove();
     };
   }, []);
 
   return null;
 }
-
 export default function App() {
   const [stage, setStage] = useState("idle");
   const [accepted, setAccepted] = useState(false);
@@ -1099,7 +1317,7 @@ export default function App() {
         try {
           audio1Ref.current?.pause();
           audio3Ref.current?.pause();
-        } catch (_) {}
+        } catch { /* ignore */ }
         setStage("idle");
         setAccepted(false);
       }
@@ -1152,7 +1370,7 @@ export default function App() {
   const finish = useCallback(() => {
     try {
       audio1Ref.current?.pause();
-    } catch (_) {}
+    } catch { /* ignore */ }
     setStage("done");
   }, []);
 
